@@ -1,0 +1,43 @@
+/* popup.css */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@100;200;300;400;500;600;700&display=swap');
+
+body
+{
+    font-family: "IBM Plex Sans KR", sans-serif;
+    padding: 10px;
+    width: 250px;
+}
+
+h3
+{
+    margin: 5px;
+}
+
+input::placeholder,
+textarea::placeholder
+{
+    font-family: "IBM Plex Sans KR", sans-serif;
+}
+
+input,
+button
+{
+    font-family: 'IBM Plex Sans KR', sans-serif;
+    margin-top: 5px;
+    width: 100%;
+}
+
+#name
+{
+    width: 100%;
+    height: 30px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.button-group
+{
+    display: flex;
+    gap: 5px;
+}
