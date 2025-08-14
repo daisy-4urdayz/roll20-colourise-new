@@ -40,11 +40,9 @@ const hsvToRgb = (h, s, v) => {
 const rgbToHex = (r, g, b) =>
     `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 
-// 이름 기반 자동 색상 생성
+// 이름 기반 자동 색상 생성 (구버전 공식)
 const generateColorFromName = name => {
     const hash = Math.abs(hashCode(name));
-
-    // 구버전 색상 계산 공식 적용
     const hue = (hash % 120) * 3;
     const saturation = 5 + (hash % 3);
     const brightness = 95 - (hash % 3);
@@ -56,27 +54,24 @@ const generateColorFromName = name => {
 // 색상 적용 함수
 const applyColorsToChat = async () => {
     const storedColors = await loadColors();
-    const messages = document.querySelectorAll('#textchat .message.general:not(.you)'); // 자기 자신의 채팅은 기본 컬러
+    const messages = document.querySelectorAll('#textchat .message.general'); // .you 포함
     let lastName = null;
 
     messages.forEach(msg => {
         if (msg.classList.contains('roll20-colourised')) return;
 
         const nameTag = msg.querySelector('.by');
-        const name = nameTag?.textContent.trim() || lastName;
-        if (!name) return;
+        const name = nameTag?.textContent.trim() || lastName; // <span class="by"> 없으면 lastName 사용
+        if (!name) return; // 저널 미선택 → 기본 Roll20 색상 유지
 
         lastName = name;
 
-        // 이름 매칭 방식: 완전 일치 우선 → 부분 일치 → 자동 색상
+        // 저장된 색상 우선, 없으면 자동 색상
         let matchedKey = Object.keys(storedColors).find(key => key === name);
         if (!matchedKey) {
             matchedKey = Object.keys(storedColors).find(key => name.includes(key));
         }
-
         const hex = matchedKey ? storedColors[matchedKey] : generateColorFromName(name);
-
-        console.log(`🎨 적용 대상: ${name} → ${hex} (매칭: ${matchedKey || '자동 생성'})`);
 
         msg.style.setProperty('box-shadow', `inset 0 0 0 1000px ${hex}`, 'important');
         msg.classList.add('roll20-colourised');

@@ -9,7 +9,8 @@ body
     width: 250px;
 }
 
-h3
+h3,
+h4
 {
     margin: 5px;
 }
@@ -40,4 +41,9 @@ button
 {
     display: flex;
     gap: 5px;
+}
+
+.delete-btn
+{
+    margin-bottom: 12px;
 }
