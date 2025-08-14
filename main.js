@@ -6,7 +6,7 @@ const loadColors = async () => {
     return colors || {};
 };
 
-// 이름 기반 해시 생성
+// 이름 기반 해시 생성 (구버전 공식)
 const hashCode = str =>
     Array.from(str).reduce((hash, c) => ((hash << 7) - hash + c.charCodeAt(0) * 7) | 0, 0);
 
@@ -40,7 +40,7 @@ const hsvToRgb = (h, s, v) => {
 const rgbToHex = (r, g, b) =>
     `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 
-// 이름 기반 자동 색상 생성 (구버전 공식)
+// 이름 기반 자동 색상 생성
 const generateColorFromName = name => {
     const hash = Math.abs(hashCode(name));
     const hue = (hash % 120) * 3;
@@ -54,27 +54,43 @@ const generateColorFromName = name => {
 // 색상 적용 함수
 const applyColorsToChat = async () => {
     const storedColors = await loadColors();
-    const messages = document.querySelectorAll('#textchat .message.general'); // .you 포함
+    const messages = document.querySelectorAll('#textchat .message.general');
+
     let lastName = null;
+    let lastHex = null;
 
     messages.forEach(msg => {
         if (msg.classList.contains('roll20-colourised')) return;
 
         const nameTag = msg.querySelector('.by');
-        const name = nameTag?.textContent.trim() || lastName; // <span class="by"> 없으면 lastName 사용
-        if (!name) return; // 저널 미선택 → 기본 Roll20 색상 유지
 
-        lastName = name;
+        if (nameTag) {
+            // <span class="by"> 있는 메시지 → 색상 결정
+            const name = nameTag.textContent.trim();
+            if (!name) {
+                lastName = null;
+                lastHex = null;
+                return; // 이름 없는 메시지는 건너뜀
+            }
 
-        // 저장된 색상 우선, 없으면 자동 색상
-        let matchedKey = Object.keys(storedColors).find(key => key === name);
-        if (!matchedKey) {
-            matchedKey = Object.keys(storedColors).find(key => name.includes(key));
+            lastName = name;
+
+            // 저장된 색상 우선, 없으면 자동 색상
+            let matchedKey = Object.keys(storedColors).find(key => key === name);
+            if (!matchedKey) {
+                matchedKey = Object.keys(storedColors).find(key => name.includes(key));
+            }
+            lastHex = matchedKey ? storedColors[matchedKey] : generateColorFromName(name);
+
+            msg.style.setProperty('box-shadow', `inset 0 0 0 1000px ${lastHex}`, 'important');
+            msg.classList.add('roll20-colourised');
+        } else {
+            // <span class="by"> 없는 메시지 → 직전 이름과 동일하면 색 적용, 아니면 패스
+            if (lastName && lastHex) {
+                msg.style.setProperty('box-shadow', `inset 0 0 0 1000px ${lastHex}`, 'important');
+                msg.classList.add('roll20-colourised');
+            }
         }
-        const hex = matchedKey ? storedColors[matchedKey] : generateColorFromName(name);
-
-        msg.style.setProperty('box-shadow', `inset 0 0 0 1000px ${hex}`, 'important');
-        msg.classList.add('roll20-colourised');
     });
 };
 
