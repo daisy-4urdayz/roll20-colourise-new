@@ -5,7 +5,10 @@
 
 ### ⚙️ 기능
 - 원본 확장과 거의 비슷합니다. 대신 **사용자가 직접 색상을 지정할 수 있는 기능**과 **자신의 채팅에 색을 입힐지 입히지 않을지 선택하는 기능**(2.3.0~)이 추가되었습니다.
-- <img width="600" height="548" alt="image" src="https://github.com/user-attachments/assets/ebcde597-1ebb-4184-93e2-ac58b0828649" />
+<img width="400" height="365" alt="image" src="https://github.com/user-attachments/assets/ebcde597-1ebb-4184-93e2-ac58b0828649" />
+
+<br>
+<br>
 
 ![Roll20 Colourise 스크린샷 1](./image/1.png)
 - 위와 같이 사용자가 색을 지정하지 않았거나 초기화했다면, 프로그램에서 기본적으로 설정된 색이 나옵니다.
