@@ -1,17 +1,28 @@
+// main.js
+
 console.log("✅ main.js is active");
 
 // 저장된 색상 불러오기
-const loadColors = async () => {
+const loadColors = async () =>
+{
     const { colors } = await chrome.storage.local.get('colors');
     return colors || {};
 };
+
+// loadSelfColorEnabled
+const loadSelfColorEnabled = async () =>
+{
+    const { selfColorEnabled } = await chrome.storage.local.get("selfColorEnabled");
+    return selfColorEnabled ?? true; // 기본값 true
+}
 
 // 이름 기반 해시 생성 (구버전 공식)
 const hashCode = str =>
     Array.from(str).reduce((hash, c) => ((hash << 7) - hash + c.charCodeAt(0) * 7) | 0, 0);
 
 // HSV → RGB 변환
-const hsvToRgb = (h, s, v) => {
+const hsvToRgb = (h, s, v) =>
+{
     s = Math.max(0, Math.min(100, s)) / 100;
     v = Math.max(0, Math.min(100, v)) / 100;
     h = Math.max(0, Math.min(360, h)) / 60;
@@ -41,7 +52,8 @@ const rgbToHex = (r, g, b) =>
     `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 
 // 이름 기반 자동 색상 생성
-const generateColorFromName = name => {
+const generateColorFromName = name =>
+{
     const hash = Math.abs(hashCode(name));
     const hue = (hash % 120) * 3;
     const saturation = 5 + (hash % 3);
@@ -52,58 +64,77 @@ const generateColorFromName = name => {
 };
 
 // 색상 적용 함수
-const applyColorsToChat = async () => {
+const applyColorsToChat = async () =>
+{
     const storedColors = await loadColors();
-    const messages = document.querySelectorAll('#textchat .message.general');
+    const selfColorEnabled = await loadSelfColorEnabled();
+    const messages = document.querySelectorAll('#textchat .message'); // 더 안전하게
 
     let lastName = null;
     let lastHex = null;
 
-    messages.forEach(msg => {
+    messages.forEach(msg =>
+    {
         if (msg.classList.contains('roll20-colourised')) return;
+
+        // 내 메시지 처리
+        if (msg.classList.contains("you") && !selfColorEnabled)
+        {
+            msg.classList.add("roll20-colourised");
+            return;
+        }
 
         const nameTag = msg.querySelector('.by');
 
-        if (nameTag) {
-            // <span class="by"> 있는 메시지 → 색상 결정
+        if (nameTag)
+        {
             const name = nameTag.textContent.trim();
-            if (!name) {
+            if (!name)
+            {
                 lastName = null;
                 lastHex = null;
-                return; // 이름 없는 메시지는 건너뜀
+                return;
             }
 
             lastName = name;
 
-            // 저장된 색상 우선, 없으면 자동 색상
             let matchedKey = Object.keys(storedColors).find(key => key === name);
-            if (!matchedKey) {
+            if (!matchedKey)
+            {
                 matchedKey = Object.keys(storedColors).find(key => name.includes(key));
             }
             lastHex = matchedKey ? storedColors[matchedKey] : generateColorFromName(name);
 
-            msg.style.setProperty('box-shadow', `inset 0 0 0 1000px ${lastHex}`, 'important');
+            msg.style.setProperty('background-color', lastHex, 'important'); // ✅ 수정
             msg.classList.add('roll20-colourised');
-        } else {
-            // <span class="by"> 없는 메시지 → 직전 이름과 동일하면 색 적용, 아니면 패스
-            if (lastName && lastHex) {
-                msg.style.setProperty('box-shadow', `inset 0 0 0 1000px ${lastHex}`, 'important');
+        }
+        else
+        {
+            if (lastName && lastHex)
+            {
+                msg.style.setProperty('background-color', lastHex, 'important'); // ✅ 수정
                 msg.classList.add('roll20-colourised');
             }
         }
     });
 };
 
+
 // 채팅창 감지 및 초기 적용
-const waitForChat = () => {
+const waitForChat = () =>
+{
     const chat = document.getElementById('textchat');
-    if (chat) {
+    if (chat)
+    {
         console.log("✅ Roll20 Colourise: chat found");
         applyColorsToChat();
 
-        new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                mutation.addedNodes.forEach(node => {
+        new MutationObserver(mutations =>
+        {
+            mutations.forEach(mutation =>
+            {
+                mutation.addedNodes.forEach(node =>
+                {
                     if (!(node instanceof HTMLElement)) return;
                     if (!node.classList.contains('message')) return;
                     if (node.classList.contains('roll20-colourised')) return;
@@ -112,7 +143,9 @@ const waitForChat = () => {
                 });
             });
         }).observe(chat, { childList: true, subtree: true });
-    } else {
+    }
+    else
+    {
         console.log("⏳ Roll20 Colourise: waiting for chat...");
         setTimeout(waitForChat, 1000);
     }
@@ -121,9 +154,12 @@ const waitForChat = () => {
 waitForChat();
 
 // popup.js에서 보낸 메시지 수신
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === 'refreshColors') {
-        document.querySelectorAll('#textchat .message.general').forEach(msg => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
+{
+    if (message.type === 'refreshColors')
+    {
+        document.querySelectorAll('#textchat .message.general').forEach(msg =>
+        {
             msg.classList.remove('roll20-colourised');
         });
 

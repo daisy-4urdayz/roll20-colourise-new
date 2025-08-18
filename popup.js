@@ -7,6 +7,7 @@ const saveBtn = document.getElementById("save");
 const resetBtn = document.getElementById("reset");
 const status = document.getElementById("status");
 const colorList = document.getElementById("colorList");
+const toggleSelfColor = document.getElementById("toggleSelfColor");
 
 // 저장된 색상 불러오기
 const loadColors = async () =>
@@ -54,18 +55,24 @@ const updateColorList = (colors) =>
 };
 
 // 초기 로드
-loadColors().then(colors =>
+(async () =>
 {
+    const colors = await loadColors();
     updateColorList(colors);
 
     // 이름 입력 시 기존 색상 불러오기
-    nameInput.addEventListener("input", () =>
+    nameInput.addEventListener("input", async () =>
     {
         const name = nameInput.value.trim();
+        const colors = await loadColors();
         const matchedKey = Object.keys(colors).find(key => name.includes(key));
         if (matchedKey) colorInput.value = colors[matchedKey];
     });
-});
+
+    // "내 채팅에도 색 적용" 체크박스 상태 불러오기
+    const { selfColorEnabled } = await chrome.storage.local.get("selfColorEnabled");
+    toggleSelfColor.checked = selfColorEnabled ?? true; // 기본값 true
+})();
 
 // 저장 버튼
 saveBtn.addEventListener("click", async () =>
@@ -101,6 +108,18 @@ resetBtn.addEventListener("click", () =>
     {
         status.textContent = "🧹 모든 색상 초기화됨";
         updateColorList({});
+        chrome.tabs.query({ active: true, currentWindow: true }, tabs =>
+        {
+            chrome.tabs.sendMessage(tabs[0].id, { type: "refreshColors" });
+        });
+    });
+});
+
+// 체크박스 상태 저장
+toggleSelfColor.addEventListener("change", () =>
+{
+    chrome.storage.local.set({ selfColorEnabled: toggleSelfColor.checked }, () =>
+    {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs =>
         {
             chrome.tabs.sendMessage(tabs[0].id, { type: "refreshColors" });
