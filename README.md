@@ -4,7 +4,7 @@
 - 더하여 신청자/원본 제작자의 합의 아래, 확장 프로그램 및 소스 코드를 전체 공개합니다. 실제 프로그램은 [이곳](https://chromewebstore.google.com/detail/bdmnfebmomokholhpmfdglgohkolbikp?utm_source=item-share-cb)에서 설치하실 수 있습니다.
 
 ### ⚙️ 기능
-- 원본 확장과 거의 비슷합니다. 대신 **사용자가 직접 색상을 지정할 수 있는 기능**과 **자신의 채팅에 색을 입힐지 입히지 않을지 선택하는 기능**(2.3.0~)이 추가되었습니다.
+- 원본 확장과 거의 비슷합니다. 대신 **사용자가 직접 색상을 지정할 수 있는 기능**과 **자신의 채팅에 색을 입힐지 입히지 않을지 선택하는 기능**(2.3.0~. 단, 체크박스를 설정/해제한 후 꼭 1회 새로고침해 주세요)이 추가되었습니다.
 <img width="400" height="365" alt="image" src="https://github.com/user-attachments/assets/ebcde597-1ebb-4184-93e2-ac58b0828649" />
 
 <br>
