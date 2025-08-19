@@ -13,7 +13,7 @@ const loadColors = async () =>
 const loadSelfColorEnabled = async () =>
 {
     const { selfColorEnabled } = await chrome.storage.local.get("selfColorEnabled");
-    return selfColorEnabled ?? true; // 기본값 true
+    return selfColorEnabled ? ? true; // 기본값 true
 }
 
 // 이름 기반 해시 생성 (구버전 공식)
@@ -69,7 +69,7 @@ const applyColorsToChat = async () =>
     const storedColors = await loadColors();
     const selfColorEnabled = await loadSelfColorEnabled();
     // "대화 채팅"만 선택
-    const messages = document.querySelectorAll('#textchat .message.general');
+    const messages = document.querySelectorAll('#textchat .message.general, #textchat .message.rollresult');
 
     let lastName = null;
     let lastHex = null;
@@ -145,8 +145,8 @@ const waitForChat = () =>
             {
                 mutation.addedNodes.forEach(node =>
                 {
-                    if (!(node instanceof HTMLElement)) return;
                     if (!node.classList.contains('message')) return;
+                    if (!(node.classList.contains('general') || node.classList.contains('rollresult'))) return; // general이나 rollresult만 처리
                     if (node.classList.contains('roll20-colourised')) return;
 
                     applyColorsToChat();
