@@ -68,7 +68,8 @@ const applyColorsToChat = async () =>
 {
     const storedColors = await loadColors();
     const selfColorEnabled = await loadSelfColorEnabled();
-    const messages = document.querySelectorAll('#textchat .message'); // 더 안전하게
+    // "대화 채팅"만 선택
+    const messages = document.querySelectorAll('#textchat .message.general');
 
     let lastName = null;
     let lastHex = null;
@@ -77,7 +78,7 @@ const applyColorsToChat = async () =>
     {
         if (msg.classList.contains('roll20-colourised')) return;
 
-        // 내 메시지 처리
+        // 내 메시지인데 색상 적용 OFF → 그냥 패스
         if (msg.classList.contains("you") && !selfColorEnabled)
         {
             msg.classList.add("roll20-colourised");
@@ -85,7 +86,6 @@ const applyColorsToChat = async () =>
         }
 
         const nameTag = msg.querySelector('.by');
-
         if (nameTag)
         {
             const name = nameTag.textContent.trim();
@@ -105,19 +105,29 @@ const applyColorsToChat = async () =>
             }
             lastHex = matchedKey ? storedColors[matchedKey] : generateColorFromName(name);
 
-            msg.style.setProperty('background-color', lastHex, 'important'); // ✅ 수정
+            msg.style.setProperty(
+                'box-shadow',
+                `inset 0 0 0 1000px ${lastHex}`,
+                'important'
+            );
             msg.classList.add('roll20-colourised');
         }
         else
         {
+            // 이전 메시지와 같은 화자면 동일 색 적용
             if (lastName && lastHex)
             {
-                msg.style.setProperty('background-color', lastHex, 'important'); // ✅ 수정
+                msg.style.setProperty(
+                    'box-shadow',
+                    `inset 0 0 0 1000px ${lastHex}`,
+                    'important'
+                );
                 msg.classList.add('roll20-colourised');
             }
         }
     });
 };
+
 
 
 // 채팅창 감지 및 초기 적용
