@@ -13,7 +13,7 @@ const loadColors = async () =>
 const loadSelfColorEnabled = async () =>
 {
     const { selfColorEnabled } = await chrome.storage.local.get("selfColorEnabled");
-    return selfColorEnabled ? ? true; // 기본값 true
+    return selfColorEnabled ?? true; // 기본값 true
 }
 
 // 이름 기반 해시 생성 (구버전 공식)
