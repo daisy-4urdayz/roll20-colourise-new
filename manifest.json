@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Roll20 Colourise New",
     "description": "This extension colours the text chat in Roll20.",
-    "version": "2.3.2",
+    "version": "2.4.2",
 
     "action":
     {
