@@ -1,22 +1,23 @@
 // main.js
 
+// 제대로 작동하고 있는지 확인
 console.log("✅ main.js is active");
 
-// 저장된 색상 불러오기
-const loadColors = async () =>
+// 캐시 변수 선언
+let cachedColors = {};
+let cachedSelfColorEnabled = true;
+
+// 설정값 미리 불러오기
+const preloadSettings = async () =>
 {
     const { colors } = await chrome.storage.local.get('colors');
-    return colors || {};
+    cachedColors = colors || {};
+
+    const { selfColorEnabled } = await chrome.storage.local.get("selfColorEnabled");
+    cachedSelfColorEnabled = selfColorEnabled ?? true;
 };
 
-// loadSelfColorEnabled
-const loadSelfColorEnabled = async () =>
-{
-    const { selfColorEnabled } = await chrome.storage.local.get("selfColorEnabled");
-    return selfColorEnabled ?? true; // 기본값 true
-}
-
-// 이름 기반 해시 생성 (구버전 공식)
+// 이름 기반 해시 생성
 const hashCode = str =>
     Array.from(str).reduce((hash, c) => ((hash << 7) - hash + c.charCodeAt(0) * 7) | 0, 0);
 
@@ -51,7 +52,7 @@ const hsvToRgb = (h, s, v) =>
 const rgbToHex = (r, g, b) =>
     `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 
-// 이름 기반 자동 색상 생성
+// 이름 기반 색상 생성
 const generateColorFromName = name =>
 {
     const hash = Math.abs(hashCode(name));
@@ -63,81 +64,66 @@ const generateColorFromName = name =>
     return rgbToHex(r, g, b);
 };
 
-// 색상 적용 함수
-const applyColorsToChat = async () =>
+// 직전 화자 정보 저장
+let lastName = null;
+let lastHex = null;
+
+// 메시지 하나에 색상 적용
+const applyColorToMessage = (msg) =>
 {
-    const storedColors = await loadColors();
-    const selfColorEnabled = await loadSelfColorEnabled();
-    // "대화 채팅"만 선택
-    const messages = document.querySelectorAll('#textchat .message.general, #textchat .message.rollresult');
+    if (msg.classList.contains('roll20-colourised')) return;
 
-    let lastName = null;
-    let lastHex = null;
-
-    messages.forEach(msg =>
+    if (msg.classList.contains("you") && !cachedSelfColorEnabled)
     {
-        if (msg.classList.contains('roll20-colourised')) return;
+        msg.classList.add("roll20-colourised");
+        return;
+    }
 
-        // 내 메시지인데 색상 적용 OFF → 그냥 패스
-        if (msg.classList.contains("you") && !selfColorEnabled)
+    const nameTag = msg.querySelector('.by');
+    if (nameTag)
+    {
+        const name = nameTag.textContent.trim();
+        if (!name) return;
+
+        lastName = name;
+
+        let matchedKey = Object.keys(cachedColors).find(key => key === name);
+        if (!matchedKey)
         {
-            msg.classList.add("roll20-colourised");
-            return;
+            matchedKey = Object.keys(cachedColors).find(key => name.includes(key));
         }
+        lastHex = matchedKey ? cachedColors[matchedKey] : generateColorFromName(name);
+    }
 
-        const nameTag = msg.querySelector('.by');
-        if (nameTag)
-        {
-            const name = nameTag.textContent.trim();
-            if (!name)
-            {
-                lastName = null;
-                lastHex = null;
-                return;
-            }
-
-            lastName = name;
-
-            let matchedKey = Object.keys(storedColors).find(key => key === name);
-            if (!matchedKey)
-            {
-                matchedKey = Object.keys(storedColors).find(key => name.includes(key));
-            }
-            lastHex = matchedKey ? storedColors[matchedKey] : generateColorFromName(name);
-
-            msg.style.setProperty(
-                'box-shadow',
-                `inset 0 0 0 1000px ${lastHex}`,
-                'important'
-            );
-            msg.classList.add('roll20-colourised');
-        }
-        else
-        {
-            // 이전 메시지와 같은 화자면 동일 색 적용
-            if (lastName && lastHex)
-            {
-                msg.style.setProperty(
-                    'box-shadow',
-                    `inset 0 0 0 1000px ${lastHex}`,
-                    'important'
-                );
-                msg.classList.add('roll20-colourised');
-            }
-        }
-    });
+    if (lastHex)
+    {
+        msg.style.setProperty(
+            'box-shadow',
+            `inset 0 0 0 1000px ${lastHex}`,
+            'important'
+        );
+        msg.classList.add('roll20-colourised');
+    }
 };
 
-
-
-// 채팅창 감지 및 초기 적용
-const waitForChat = () =>
+// 초기 메시지 전체에 색상 적용
+const applyInitialColors = () =>
 {
+    const messages = document.querySelectorAll('#textchat .message.general, #textchat .message.rollresult');
+    messages.forEach(msg => applyColorToMessage(msg));
+};
+
+// 채팅창 감지 및 MutationObserver 설정
+const waitForChat = async () =>
+{
+    await preloadSettings(); // 설정값 미리 불러오기
+
     const chat = document.getElementById('textchat');
     if (chat)
     {
         console.log("✅ Roll20 Colourise: chat found");
-        applyColorsToChat();
+
+        applyInitialColors();
 
         new MutationObserver(mutations =>
         {
@@ -146,10 +132,9 @@ const waitForChat = () =>
                 mutation.addedNodes.forEach(node =>
                 {
                     if (!node.classList.contains('message')) return;
-                    if (!(node.classList.contains('general') || node.classList.contains('rollresult'))) return; // general이나 rollresult만 처리
-                    if (node.classList.contains('roll20-colourised')) return;
+                    if (!(node.classList.contains('general') || node.classList.contains('rollresult'))) return;
 
-                    applyColorsToChat();
+                    applyColorToMessage(node);
                 });
             });
         }).observe(chat, { childList: true, subtree: true });
@@ -163,7 +148,7 @@ const waitForChat = () =>
 
 waitForChat();
 
-// popup.js에서 보낸 메시지 수신
+// popup.js에서 색상 새로고침 요청 수신
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
 {
     if (message.type === 'refreshColors')
@@ -173,7 +158,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
             msg.classList.remove('roll20-colourised');
         });
 
-        applyColorsToChat();
+        applyInitialColors();
         sendResponse({ status: 'ok' });
     }
 });
