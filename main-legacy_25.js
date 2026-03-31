@@ -98,8 +98,8 @@ const applyColorToMessage = (msg) =>
     if (lastHex)
     {
         msg.style.setProperty(
-            'background-color',
-            lastHex,
+            'box-shadow',
+            `inset 0 0 0 1000px ${lastHex}`,
             'important'
         );
         msg.classList.add('roll20-colourised');
@@ -109,7 +109,7 @@ const applyColorToMessage = (msg) =>
 // 초기 메시지 전체에 색상 적용
 const applyInitialColors = () =>
 {
-    const messages = document.querySelectorAll('#textchat .message.general, #textchat .message.rollresult, #textchat .message.hidden-message');
+    const messages = document.querySelectorAll('#textchat .message.general, #textchat .message.rollresult');
     messages.forEach(msg => applyColorToMessage(msg));
 };
 
@@ -132,7 +132,7 @@ const waitForChat = async () =>
                 mutation.addedNodes.forEach(node =>
                 {
                     if (!node.classList.contains('message')) return;
-                    if (!(node.classList.contains('general') || node.classList.contains('rollresult') || node.classList.contains('hidden-message'))) return;
+                    if (!(node.classList.contains('general') || node.classList.contains('rollresult'))) return;
 
                     applyColorToMessage(node);
                 });
