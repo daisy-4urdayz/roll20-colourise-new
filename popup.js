@@ -69,7 +69,7 @@ const updateColorList = (colors) =>
         if (matchedKey) colorInput.value = colors[matchedKey];
     });
 
-    // "내 채팅에도 색 적용" 체크박스 상태 불러오기
+    // '내 채팅에도 색 적용' 토글 상태 불러오기
     const { selfColorEnabled } = await chrome.storage.local.get("selfColorEnabled");
     toggleSelfColor.checked = selfColorEnabled ?? true; // 기본값 true
 })();
