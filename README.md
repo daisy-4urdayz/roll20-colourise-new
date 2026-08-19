@@ -19,16 +19,16 @@
 
 ### ⚙️ 기능
 - 원본 확장과 거의 비슷합니다. 대신 **사용자가 직접 색상을 지정할 수 있는 기능**과 **자신의 채팅에 색상을 입힐지 입히지 않을지 선택하는 기능**이 추가되었습니다.
-<img width="400" height="365" alt="image" src="image\popup.png" />
+<img src="./image/popup.png" alt="Roll20 Colourise 팝업" width="600">
 
 <br>
 <br>
 
-![Roll20 Colourise 스크린샷 1](./image/chat-1.png)
+<img src="./image/chat-1.png" alt="기본 색상이 적용된 채팅" width="600">
 - 위와 같이 사용자가 색상을 지정하지 않았거나 초기화했다면, 프로그램에서 기본적으로 설정된 색상이 나옵니다.
 
-![Roll20 Colourise 스크린샷 2](./image/chat-2.png)
-![Roll20 Colourise 스크린샷 2](./image/chat-3.png)
+<img src="./image/chat-2.png" alt="사용자 지정 색상이 적용된 채팅" width="600">
+<img src="./image/chat-3.png" alt="사용자 지정 색상이 적용된 채팅" width="600">
 - 위와 같이 사용자가 색상을 지정했다면, 그 색상이 나옵니다. 이 경우에는 글씨가 잘 보이도록 직접 조절해 주세요.
 
 ---
