@@ -63,8 +63,7 @@ const rgbToHex = (r, g, b) =>
 const generateColorFromName = name =>
 {
     const hash = Math.abs(hashCode(name));
-    // const hue = (hash % 120) * 3;
-    const hue = (hash % 300) * 1.2;
+    const hue = (hash % 120) * 3;
     const saturation = 5 + (hash % 3);
     const brightness = 95 - (hash % 3);
 
